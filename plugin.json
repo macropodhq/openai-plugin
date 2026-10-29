@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "bugherd",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Connect BugHerd to find projects and manage website feedback.",
   "author": {
     "name": "BugHerd",
@@ -92,7 +92,7 @@
         }
       },
       "publication": {
-        "release_notes": "Initial BugHerd plugin package with the hosted MCP connection, feedback triage skill, and directory listing."
+        "release_notes": "Adds BugHerd agent skills for creating feedback (including pinned feedback with screenshots), reading tasks, triage, fixing feedback with review, and reporting. The bugherd-triage skill replaces triage-feedback."
       }
     }
   }
