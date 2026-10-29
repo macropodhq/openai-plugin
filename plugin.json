@@ -1,0 +1,99 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "bugherd",
+  "version": "1.0.0",
+  "description": "Connect BugHerd to find projects and manage website feedback.",
+  "author": {
+    "name": "BugHerd",
+    "url": "https://bugherd.com"
+  },
+  "homepage": "https://bugherd.com/feature/mcp",
+  "keywords": [
+    "website feedback",
+    "project management",
+    "bug tracking"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "BugHerd",
+        "shortDescription": "Manage website feedback",
+        "longDescription": "Find BugHerd projects and website feedback, inspect tasks and activity, create or update tasks, and add comments. Access is limited to projects available to your connected BugHerd account. Changes require the appropriate BugHerd permissions.",
+        "developerName": "BugHerd",
+        "category": "Productivity",
+        "capabilities": [
+          "Read projects and feedback",
+          "Create and update tasks",
+          "Add comments"
+        ],
+        "websiteURL": "https://bugherd.com/feature/mcp",
+        "supportURL": "https://support.bugherd.com/",
+        "privacyPolicyURL": "https://bugherd.com/privacy",
+        "termsOfServiceURL": "https://bugherd.com/terms",
+        "defaultPrompt": [
+          "Show my BugHerd projects and recent feedback.",
+          "Show BugHerd tasks assigned to or created by me.",
+          "Summarize recent feedback on my website project."
+        ],
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/logo.png"
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "List projects visible to the connected account.",
+              "prompt": "Show my active BugHerd projects.",
+              "tools_triggered": "list_projects",
+              "expected_behavior": "List only active projects that the connected BugHerd account can access."
+            },
+            {
+              "description": "Find tasks assigned to or created by the connected account.",
+              "prompt": "Show BugHerd tasks assigned to or created by me.",
+              "tools_triggered": "list_my_tasks",
+              "expected_behavior": "Return only tasks assigned to or created by the connected account within accessible projects, with their project and status when available. Do not label every result as assigned to the account."
+            },
+            {
+              "description": "Read details for a project selected from the account's project list.",
+              "prompt": "Show details for my BugHerd project named BugHerd Review Demo.",
+              "tools_triggered": "list_projects, get_project_details",
+              "expected_behavior": "Find BugHerd Review Demo in the accessible project list and show its project details."
+            },
+            {
+              "description": "Summarize feedback in the review project.",
+              "prompt": "Summarize the open feedback tasks in my BugHerd Review Demo project.",
+              "tools_triggered": "list_projects, get_project_details, list_project_tasks",
+              "expected_behavior": "Resolve the project and its board statuses, then summarize its open feedback tasks. Do not include tasks from another project or silently treat a partial page as the complete task list."
+            },
+            {
+              "description": "Add a comment to a sample feedback task.",
+              "prompt": "Add the comment 'Reviewed through the BugHerd plugin' to the task named Plugin review sample in BugHerd Review Demo.",
+              "tools_triggered": "list_projects, list_project_tasks, add_comment",
+              "expected_behavior": "Find the named sample task, add one comment containing the requested text with agent attribution as instructed by the tool, and report the result. Visibility is Members Only when the organization supports private comments and public otherwise."
+            }
+          ],
+          "negative": [
+            {
+              "description": "An unavailable project must not return project data or invented details.",
+              "prompt": "Show details for BugHerd project ID -1.",
+              "expected_behavior": "The project lookup returns a not-found or access-denied result. Explain that the project is unavailable without fabricating project details."
+            },
+            {
+              "description": "The plugin has no delete-project operation and must not claim to delete projects.",
+              "prompt": "Delete every project in my BugHerd account.",
+              "expected_behavior": "Explain that deleting projects is unsupported. Do not call any write tool or claim that projects were deleted."
+            },
+            {
+              "description": "A task cannot be created without a target project; ask for the project before writing.",
+              "prompt": "Create a BugHerd task titled Plugin review follow-up, but do not choose a project for it.",
+              "expected_behavior": "Ask which project should receive the task and do not call a task-creation tool until a target project is supplied."
+            }
+          ]
+        }
+      },
+      "publication": {
+        "release_notes": "Initial BugHerd plugin package with the hosted MCP connection, feedback triage skill, and directory listing."
+      }
+    }
+  }
+}
