@@ -27,7 +27,17 @@ Call `begin_feedback_capture` with the `project_id` once per run, even for many 
 - `measure_script_url`: the same code as a script URL, if loading a script is easier than evaluating the snippet.
 - `instructions`: the current measuring rules. Follow them if they differ from this guide.
 
-### 2. Measure the element
+### 2. Set the viewport size
+
+The pin and the screenshot both use the viewport size you measure at, and so does BugHerd's own screenshot. Browser panels inside editors are often narrow, which makes many sites switch to their mobile layout.
+
+- If the user asks for a particular device, screen size or breakpoint, use that, for example 390×844 for a phone.
+- Otherwise, resize the viewport to a desktop size such as 1280×800 before loading the page.
+- If your browser can't be resized, carry on and mention the size you measured at in the task.
+
+Don't resize between measuring and taking the screenshot.
+
+### 3. Measure the element
 
 On each page load, evaluate the `snippet` in the page. It's safe to run more than once. Then evaluate:
 
@@ -42,11 +52,11 @@ BugHerdMeasure.measure('#checkout .pay-button')
 
 **Pass the packet unchanged.** It carries a checksum, so editing, rounding or rebuilding it makes BugHerd reject it.
 
-### 3. Take the screenshot, if you can
+### 4. Take the screenshot, if you can
 
 Straight after `measure`, before anything scrolls, take a screenshot of the **visible viewport only**. A full-page screenshot puts the pin in the wrong place.
 
-### 4. Create the task
+### 5. Create the task
 
 Call `create_task` with the usual fields and `capture` set to the packet. The page URL and browser details come from the packet, so you don't need to pass `url`.
 
@@ -55,7 +65,7 @@ Set `screenshot`:
 - `auto` (the default): if you don't upload a screenshot within 2 minutes, BugHerd takes one from the live page at the measured scroll position.
 - `none`: BugHerd won't take one. Use it when BugHerd can't see what you see, such as a page behind a login or content that only appears after an interaction.
 
-### 5. Upload the screenshot
+### 6. Upload the screenshot
 
 Call `prepare_feedback_screenshot` with `project_id` and `task_id`, within an hour of creating the task. It returns an upload form and the `expected_width` and `expected_height` of the viewport in CSS pixels (a device-pixel multiple is fine). Then:
 
