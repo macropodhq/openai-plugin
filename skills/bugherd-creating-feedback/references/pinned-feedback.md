@@ -2,7 +2,7 @@
 
 A pinned task is attached to one element on a page. BugHerd shows the pin on that element in the sidebar, and on the task's screenshot.
 
-These steps need `begin_feedback_capture`, which only appears when pinned feedback is enabled for the user's organisation.
+Use these steps whenever you can open the page and run JavaScript. A client that cannot, such as a terminal, creates page feedback with `url` instead.
 
 ## What to expect from each setup
 
@@ -12,7 +12,7 @@ These steps need `begin_feedback_capture`, which only appears when pinned feedba
 | Browser session that can run JavaScript, but you can't upload images | Accurate | BugHerd takes one about 2 minutes later, if the page is public |
 | Page needs a login, or is on localhost or a private network | Accurate, if your browser is signed in | Only if you upload one. BugHerd can't reach the page |
 | Several elements measured together with `measureAll` | Accurate | BugHerd takes one only for elements that were on screen |
-| No browser session | No pin. Create page feedback with `url` | None from BugHerd. Attach your own image if you have one |
+| No browser session, such as a terminal | No pin. Create page feedback with `url` | None. An attached file is not the pin screenshot |
 
 BugHerd also can't take its own screenshot when the organisation has screenshots turned off, or when more than an hour has passed since the task was created.
 
@@ -92,5 +92,5 @@ The response also includes `script_url`, `capture_url` and `token` for `BugHerdC
 
 - **A warning says the task was created without a pin:** the packet was rejected, usually because it changed. Measure again and move the pin with `update_task`.
 - **"Capture has already been used":** each `capture_id` works once. Capture again.
-- **"Pinned feedback capture is not enabled":** create page feedback with `url` instead.
+- **`begin_feedback_capture` is not in your tool list:** start a new chat so the tools reload. Don't use `prepare_attachment_upload` in its place.
 - **The pin looks off on the screenshot:** the screenshot was probably full-page, or the page scrolled between measuring and capturing. Measure again and take a viewport-only screenshot.

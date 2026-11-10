@@ -9,7 +9,7 @@ description: Create BugHerd tasks from reviews, audits, checklists or user reque
 
 1. Find the project and call `get_project_details` (see `bugherd-basics`). Note its websites, statuses and, if you'll tag tasks, call `list_project_tags`.
 2. Check the page URL is on one of the project's websites.
-3. Decide whether the tasks should be **pinned** to elements on the page. Pinned tasks show exactly where the issue is and usually get a screenshot. See [Pinned feedback](#pinned-feedback).
+3. Pin the task when you can open the page and run JavaScript. Otherwise create page feedback. See [Pinned feedback](#pinned-feedback).
 
 ## Write good tasks
 
@@ -33,15 +33,17 @@ Before a large batch, tell the user how many tasks you're about to create and in
 
 ## Pinned feedback
 
-If `begin_feedback_capture` is in your tool list, pinned feedback is available. If it isn't, create **page feedback**: pass `url` and describe the element in the description. Don't write `css_selector_info` by hand: a guessed selector is unlikely to pin and may point at the wrong element.
+When you can open the page and run JavaScript, pin every task. Call `begin_feedback_capture`, measure the element, and pass the packet as `capture`. Then upload the viewport with `prepare_feedback_screenshot`, or leave `screenshot` as `auto` and BugHerd takes one of a public page. A client that cannot run JavaScript, such as a terminal, still creates **page feedback**: pass `url` and describe the element in the description. Don't write `css_selector_info` by hand.
 
-BugHerd always does its best to pin feedback accurately and attach a screenshot. It's most accurate when you can:
+If `begin_feedback_capture` is missing from your tool list, start a new chat so the tools reload. Don't attach a file with `prepare_attachment_upload` instead of pinning.
+
+A pin and a screenshot are most accurate when you can:
 
 1. **Open the page in a browser session** and **run JavaScript in it**, to measure the element.
 2. **Take a screenshot of the visible viewport and upload it** over HTTP.
 3. **Reach the page the way its visitors do.** If the site needs a login, your browser session must be signed in.
 
-When some of these aren't available, BugHerd works with what your setup supports. For example, it takes the screenshot itself for public pages.
+When you can't upload a screenshot, BugHerd takes one itself for public pages. Measuring still needs a browser session. Without one, create page feedback.
 
 **Tell the user once, at the start of the run**, which of these your setup supports and what that means for the pins and screenshots they'll get. Keep it brief and practical, for example:
 
@@ -56,10 +58,10 @@ Follow [references/pinned-feedback.md](references/pinned-feedback.md) for the st
 
 ## Attachments
 
-To attach a local file, such as a log or a full-page screenshot:
+To attach a local file, such as a log:
 
 1. Call `prepare_attachment_upload` to get a `put_url` and `public_url` for each file.
-2. HTTP PUT the file bytes to `put_url` with the `headers` it returned.
+2. HTTP PUT the file bytes to `put_url`. Send only the headers in `headers`. Do not add `x-amz-acl`: it is already in the URL, and S3 rejects the upload if you send it again.
 3. Call `update_task_attachments` with `action: "add"` and `attachments: [{ file_name, url: public_url }]`.
 
-For a file that's already online, pass its HTTPS `url` directly in step 3. A pinned task's screenshot is not an attachment; it has its own flow, described in the reference.
+For a file that's already online, pass its HTTPS `url` directly in step 3. This adds a file to the task. It does not pin the task, and it does not become the screenshot in the sidebar. That screenshot uses `prepare_feedback_screenshot`, described in the reference.
