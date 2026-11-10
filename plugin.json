@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "bugherd",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Connect BugHerd to find projects and manage website feedback.",
   "author": {
     "name": "BugHerd",
@@ -18,12 +18,13 @@
       "interface": {
         "displayName": "BugHerd",
         "shortDescription": "Manage website feedback",
-        "longDescription": "Find BugHerd projects and website feedback, inspect tasks and activity, create or update tasks, and add comments. Access is limited to projects available to your connected BugHerd account. Changes require the appropriate BugHerd permissions.",
+        "longDescription": "Find BugHerd projects and website feedback, inspect tasks and activity, create or update tasks, and add comments. When the client can open a page, feedback is pinned to an element and given a screenshot. Access is limited to projects available to your connected BugHerd account. Changes require the appropriate BugHerd permissions.",
         "developerName": "BugHerd",
         "category": "Productivity",
         "capabilities": [
           "Read projects and feedback",
           "Create and update tasks",
+          "Pin feedback to a page element and attach a screenshot",
           "Add comments"
         ],
         "websiteURL": "https://bugherd.com/feature/mcp",
@@ -92,7 +93,7 @@
         }
       },
       "publication": {
-        "release_notes": "Adds BugHerd agent skills for creating feedback (including pinned feedback with screenshots), reading tasks, triage, fixing feedback with review, and reporting. The bugherd-triage skill replaces triage-feedback."
+        "release_notes": "Pinned feedback is the standard path when the client can open a page and run JavaScript. A client that cannot, such as a terminal, can still leave page feedback. The creating-feedback skill tells agents not to use a file attachment as the pin screenshot."
       }
     }
   }
