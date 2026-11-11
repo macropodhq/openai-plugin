@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "bugherd",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Connect BugHerd to find projects and manage website feedback.",
   "author": {
     "name": "BugHerd",
@@ -93,7 +93,7 @@
         }
       },
       "publication": {
-        "release_notes": "Pinned feedback is the standard path when the client can open a page and run JavaScript. A client that cannot, such as a terminal, can still leave page feedback. The creating-feedback skill tells agents not to use a file attachment as the pin screenshot."
+        "release_notes": "When a client cannot run JavaScript, it can pin one element from the fetched page HTML. If the user says that pin is on the wrong element, update_task can move it. A browser measurement is still the path that includes a screenshot. The pin tools are prepare_pin and upload_pin_screenshot."
       }
     }
   }

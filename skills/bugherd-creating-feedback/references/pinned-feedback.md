@@ -12,7 +12,8 @@ Use these steps whenever you can open the page and run JavaScript. A client that
 | Browser session that can run JavaScript, but you can't upload images | Accurate | BugHerd takes one about 2 minutes later, if the page is public |
 | Page needs a login, or is on localhost or a private network | Accurate, if your browser is signed in | Only if you upload one. BugHerd can't reach the page |
 | Several elements measured together with `measureAll` | Accurate | BugHerd takes one only for elements that were on screen |
-| No browser session, such as a terminal | No pin. Create page feedback with `url` | None. An attached file is not the pin screenshot |
+| Fetched page HTML, and the element is in that document | Pin at the centre of the element `element_selector` matches | None. Pass `page_html` with the selector |
+| No page HTML and no browser session | No pin. Create page feedback with `url` | None. An attached file is not the pin screenshot |
 
 BugHerd also can't take its own screenshot when the organisation has screenshots turned off, or when more than an hour has passed since the task was created.
 
@@ -20,10 +21,10 @@ BugHerd also can't take its own screenshot when the organisation has screenshots
 
 ### 1. Start a capture session
 
-Call `begin_feedback_capture` with the `project_id` once per run, even for many pages. It returns:
+Call `prepare_pin` with the `project_id` once per run, even for many pages. It returns:
 
 - `snippet`: JavaScript that defines `window.BugHerdMeasure`.
-- `snippet_version`: keep it. Pass it to later `begin_feedback_capture` calls and the snippet is left out when it hasn't changed.
+- `snippet_version`: keep it. Pass it to later `prepare_pin` calls and the snippet is left out when it hasn't changed.
 - `measure_script_url`: the same code as a script URL, if loading a script is easier than evaluating the snippet.
 - `instructions`: the current measuring rules. Follow them if they differ from this guide.
 
@@ -67,7 +68,7 @@ Set `screenshot`:
 
 ### 6. Upload the screenshot
 
-Call `prepare_feedback_screenshot` with `project_id` and `task_id`, within an hour of creating the task. It returns an upload form and the `expected_width` and `expected_height` of the viewport in CSS pixels (a device-pixel multiple is fine). Then:
+Call `upload_pin_screenshot` with `project_id` and `task_id`, within an hour of creating the task. It returns an upload form and the `expected_width` and `expected_height` of the viewport in CSS pixels (a device-pixel multiple is fine). Then:
 
 1. POST the JPEG to `upload_url` as multipart form data, with these fields: `key` set to `object_key`, `AWSAccessKeyId` set to `access_key_id`, `acl`, `policy`, `signature`, `Content-Type` set to `content_type`, and the image bytes in the `file` field.
 2. PUT `callback_url` with the JSON body `{ "key": "<object_key>" }`. This attaches the screenshot to the task.
@@ -84,6 +85,8 @@ Because nothing scrolls, BugHerd only takes screenshots for elements that were o
 
 Measure the element again and pass the packet as `capture` to `update_task`. The page URL comes from the capture. The task keeps its existing screenshot. This needs permission to manage the task.
 
+A pin placed from fetched HTML has no screenshot to compare. When the user says it is on the wrong element, ask where it should be, then call `update_task` with `element_selector` for that element and the same `page_html`. The pin moves to the centre of the matched element. Several matches move nothing.
+
 ## The older capture route
 
 The response also includes `script_url`, `capture_url` and `token` for `BugHerdCapture`. After injecting `script_url` and calling `BugHerdCapture.configure({ endpoint: capture_url, token })`, `captureElement` and `captureText` return a `capture_id`. Pass it to `create_task` as `capture_id` instead of `capture`. Each id works once. Prefer `BugHerdMeasure` unless your browser tool can't evaluate the snippet.
@@ -92,5 +95,5 @@ The response also includes `script_url`, `capture_url` and `token` for `BugHerdC
 
 - **A warning says the task was created without a pin:** the packet was rejected, usually because it changed. Measure again and move the pin with `update_task`.
 - **"Capture has already been used":** each `capture_id` works once. Capture again.
-- **`begin_feedback_capture` is not in your tool list:** start a new chat so the tools reload. Don't use `prepare_attachment_upload` in its place.
+- **`prepare_pin` is not in your tool list:** start a new chat so the tools reload. Don't use `prepare_attachment_upload` in its place.
 - **The pin looks off on the screenshot:** the screenshot was probably full-page, or the page scrolled between measuring and capturing. Measure again and take a viewport-only screenshot.
