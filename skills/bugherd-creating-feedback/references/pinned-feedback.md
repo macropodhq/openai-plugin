@@ -12,7 +12,8 @@ Use these steps whenever you can open the page and run JavaScript. A client that
 | Browser session that can run JavaScript, but you can't upload images | Accurate | BugHerd takes one about 2 minutes later, if the page is public |
 | Page needs a login, or is on localhost or a private network | Accurate, if your browser is signed in | Only if you upload one. BugHerd can't reach the page |
 | Several elements measured together with `measureAll` | Accurate | BugHerd takes one only for elements that were on screen |
-| No browser session, such as a terminal | No pin. Create page feedback with `url` | None. An attached file is not the pin screenshot |
+| Fetched page HTML, and the element is in that document | Pin at the centre of the element `element_selector` matches | None. Pass `page_html` with the selector |
+| No page HTML and no browser session | No pin. Create page feedback with `url` | None. An attached file is not the pin screenshot |
 
 BugHerd also can't take its own screenshot when the organisation has screenshots turned off, or when more than an hour has passed since the task was created.
 
@@ -83,6 +84,8 @@ Because nothing scrolls, BugHerd only takes screenshots for elements that were o
 ## Moving a pin
 
 Measure the element again and pass the packet as `capture` to `update_task`. The page URL comes from the capture. The task keeps its existing screenshot. This needs permission to manage the task.
+
+A pin placed from fetched HTML has no screenshot to compare. When the user says it is on the wrong element, ask where it should be, then call `update_task` with `element_selector` for that element and the same `page_html`. The pin moves to the centre of the matched element. Several matches move nothing.
 
 ## The older capture route
 
