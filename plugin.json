@@ -93,7 +93,7 @@
         }
       },
       "publication": {
-        "release_notes": "When a client cannot run JavaScript, it can pin one element from the fetched page HTML. If the user says that pin is on the wrong element, update_task can move it. A browser measurement is still the path that includes a screenshot."
+        "release_notes": "When a client cannot run JavaScript, it can pin one element from the fetched page HTML. If the user says that pin is on the wrong element, update_task can move it. A browser measurement is still the path that includes a screenshot. The pin tools are prepare_pin and upload_pin_screenshot."
       }
     }
   }
