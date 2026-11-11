@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "bugherd",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Connect BugHerd to find projects and manage website feedback.",
   "author": {
     "name": "BugHerd",
@@ -93,7 +93,7 @@
         }
       },
       "publication": {
-        "release_notes": "When a client cannot run JavaScript, it can pin one element from the fetched page HTML. If the user says that pin is on the wrong element, update_task can move it. A browser measurement is still the path that includes a screenshot. The pin tools are prepare_pin and upload_pin_screenshot."
+        "release_notes": "prepare_screenshot_upload returns the form for a viewport screenshot. The caller posts the image. prepare_pin is unchanged."
       }
     }
   }
