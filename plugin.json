@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "bugherd",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Connect BugHerd to find projects and manage website feedback.",
   "author": {
     "name": "BugHerd",
@@ -93,7 +93,7 @@
         }
       },
       "publication": {
-        "release_notes": "prepare_screenshot_upload returns the form for a viewport screenshot. The caller posts the image. prepare_pin is unchanged."
+        "release_notes": "When a client can capture the viewport, it uploads that screenshot and BugHerd does not take a second one. A login form continues in headless Chrome after the user signs in. HTTP basic auth stays in the window where they entered it. Passwords are not asked for in the chat."
       }
     }
   }
