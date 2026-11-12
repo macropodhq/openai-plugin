@@ -8,10 +8,12 @@ Use these steps whenever you can open the page and run JavaScript. A client that
 
 | Your setup | Pin | Screenshot |
 |---|---|---|
-| Browser session that can run JavaScript, plus you upload a viewport screenshot | Accurate | Your screenshot, exactly matching the pin |
-| Browser session that can run JavaScript, but you can't upload images | Accurate | BugHerd takes one about 2 minutes later, if the page is public |
-| Page needs a login, or is on localhost or a private network | Accurate, if your browser is signed in | Only if you upload one. BugHerd can't reach the page |
-| Several elements measured together with `measureAll` | Accurate | BugHerd takes one only for elements that were on screen |
+| You can run JavaScript and upload a viewport screenshot | Accurate | Your screenshot, exactly matching the pin. Set `screenshot` to `none` |
+| You can run JavaScript, but you can't upload images, and the page is public | Accurate | BugHerd takes one about 2 minutes later. Leave `screenshot` as `auto` |
+| Login form, and you can open a Chrome window | After the user signs in. Prefer to copy the cookies into headless Chrome and finish there | Your screenshot of the signed-in page |
+| HTTP basic auth, and you can open a Chrome window | In that same window, after the user uses Chrome's dialog | Your screenshot from that window. The sign-in does not transfer to headless Chrome |
+| Login form or basic auth, and you cannot open a window | Stop. Do not create tasks, unless they asked for feedback on the login form | None |
+| Several elements measured together with `measureAll` | Accurate, without scrolling | Only for elements already on screen, and only when you cannot upload your own |
 | Fetched page HTML, and the element is in that document | Pin at the centre of the element `element_selector` matches | None. Pass `page_html` with the selector |
 | No page HTML and no browser session | No pin. Create page feedback with `url` | None. An attached file is not the pin screenshot |
 
@@ -30,15 +32,30 @@ Call `prepare_pin` with the `project_id` once per run, even for many pages. It r
 
 ### 2. Set the viewport size
 
-The pin and the screenshot both use the viewport size you measure at, and so does BugHerd's own screenshot. Browser panels inside editors are often narrow, which makes many sites switch to their mobile layout.
+The pin and the screenshot both use the viewport size you measure at, and so does BugHerd's own screenshot. Use the device's CSS viewport, not its physical pixel size.
 
-- If the user asks for a particular device, screen size or breakpoint, use that, for example 390×844 for a phone.
-- Otherwise, resize the viewport to a desktop size such as 1280×800 before loading the page.
+- If the user names a device, screen size, or breakpoint, use that. An iPhone 15 Plus in portrait is 430×932. A common phone is 390×844.
+- Otherwise ask once which size to use, and use 1280×800 when they have no preference.
 - If your browser can't be resized, carry on and mention the size you measured at in the task.
 
 Don't resize between measuring and taking the screenshot.
 
-### 3. Measure the element
+### 3. Keep the BugHerd sidebar out of the screenshot
+
+Block requests for `sidebarv2.js` and `embed.js` before the page loads. That stops the in-page widget. Blocking those scripts does not turn off the BugHerd browser extension.
+
+Use a browser profile that does not have the extension. If the window is one the user already uses, tell them to disable the extension before you continue, or the BugHerd tab will be in the screenshots.
+
+### 4. Sign in, when the page requires it
+
+Do not ask for a password in the chat.
+
+- **Login form.** If you can open a Chrome window, ask once whether to continue. The user signs in there. Then prefer headless Chrome: copy the cookies, close the window, and finish in headless Chrome. If you cannot move the session into headless Chrome, finish in the sign-in window. If you cannot open a window, say you cannot reach the page, and do not create tasks on the login form unless they asked for feedback on that form.
+- **HTTP basic auth.** A 401, or Chrome's own username dialog. If you can open a Chrome window, ask once. The user signs in with that dialog. Stay in that window to measure, screenshot, and upload. Those credentials are not cookies, so closing the window drops the sign-in. If you cannot open a window, say the page is behind basic auth and stop.
+
+Confirm the address is the page they named before you measure.
+
+### 5. Measure the element
 
 On each page load, evaluate the `snippet` in the page. It's safe to run more than once. Then evaluate:
 
@@ -53,20 +70,20 @@ BugHerdMeasure.measure('#checkout .pay-button')
 
 **Pass the packet unchanged.** It carries a checksum, so editing, rounding or rebuilding it makes BugHerd reject it.
 
-### 4. Take the screenshot, if you can
+### 6. Take the screenshot
 
-Straight after `measure`, before anything scrolls, take a screenshot of the **visible viewport only**. A full-page screenshot puts the pin in the wrong place.
+Straight after `measure`, before anything scrolls, take a screenshot of the **visible viewport only**. A full-page screenshot puts the pin in the wrong place. Do this whenever you can capture pixels.
 
-### 5. Create the task
+### 7. Create the task
 
 Call `create_task` with the usual fields and `capture` set to the packet. The page URL and browser details come from the packet, so you don't need to pass `url`.
 
 Set `screenshot`:
 
-- `auto` (the default): if you don't upload a screenshot within 2 minutes, BugHerd takes one from the live page at the measured scroll position.
-- `none`: BugHerd won't take one. Use it when BugHerd can't see what you see, such as a page behind a login or content that only appears after an interaction.
+- `none`: you are uploading the viewport yourself, or BugHerd cannot see the page. This is the choice when you can capture pixels.
+- `auto`: you can measure but cannot capture pixels, and the page is public. If you don't upload within 2 minutes, BugHerd takes one from the live page at the measured scroll position.
 
-### 6. Upload the screenshot
+### 8. Upload the screenshot
 
 Call `prepare_screenshot_upload` with `project_id` and `task_id`, within an hour of creating the task. It returns an upload form and the `expected_width` and `expected_height` of the viewport in CSS pixels (a device-pixel multiple is fine). Then:
 
@@ -77,9 +94,9 @@ A task that already has a screenshot refuses another. If the task's `screenshot.
 
 ## Many elements on one page
 
-`BugHerdMeasure.measureAll([...])` measures several targets without scrolling. It returns a packet or `{ error }` for each. Pass each packet as a task's `capture` in `create_tasks`, and handle the errors separately.
+When you can upload a screenshot, measure one element at a time with `measure`, create that task, and upload that viewport before moving to the next element.
 
-Because nothing scrolls, BugHerd only takes screenshots for elements that were on screen. For elements further down the page, use `measure` and `create_task` one at a time, so each one is scrolled into view and gets its own screenshot.
+`BugHerdMeasure.measureAll([...])` measures several targets without scrolling. Use it only when you cannot upload screenshots. It returns a packet or `{ error }` for each. Pass each packet as a task's `capture` in `create_tasks`, and handle the errors separately. BugHerd then photographs only the elements that were already on screen, and only on a public page.
 
 ## Moving a pin
 

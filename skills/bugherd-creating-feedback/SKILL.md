@@ -33,7 +33,18 @@ Before a large batch, tell the user how many tasks you're about to create and in
 
 ## Pinned feedback
 
-When you can open the page and run JavaScript, pin every task. Call `prepare_pin`, measure the element, and pass the packet as `capture`. Then call `prepare_screenshot_upload` and post the viewport JPEG to the form it returns, or leave `screenshot` as `auto` and BugHerd takes one of a public page.
+When you can open the page and run JavaScript, pin every task and upload the viewport screenshot yourself.
+
+Call `prepare_pin` once. Before the page loads, block `sidebarv2.js` and `embed.js`. Use a browser profile without the BugHerd extension. If the window is one the user already uses, tell them to disable that extension, or the BugHerd tab will be in the screenshots.
+
+If the user named a device or a size, use that CSS viewport, such as 430×932 for an iPhone 15 Plus in portrait. Otherwise ask once which size to use, and use 1280×800 when they have no preference. Do not resize between the measurement and the screenshot.
+
+Measure with `BugHerdMeasure.measure`, pass the packet unchanged as `capture`, screenshot the visible viewport before scrolling, and post that JPEG with `prepare_screenshot_upload`. Set `screenshot` to `none` so BugHerd does not take a second one. Leave `screenshot` as `auto` only when you can measure but cannot capture pixels, and only when the page is public. Measure one element at a time when each task needs its own screenshot.
+
+Do not ask for a password in the chat.
+
+- **Login form.** If you can open a Chrome window, ask once whether to continue. The user signs in there. Then prefer headless Chrome: copy the cookies, close the window, and finish the pins and screenshots in headless Chrome. If you cannot move the session into headless Chrome, finish in the sign-in window. If you cannot open a window, say you cannot reach the page, and do not create tasks on the login form unless they asked for feedback on that form.
+- **HTTP basic auth.** A 401, or Chrome's own username dialog. If you can open a Chrome window, ask once. The user signs in with that dialog. Stay in that window for the pins and the screenshots. Those credentials do not transfer to headless Chrome. If you cannot open a window, say the page is behind basic auth and stop. Do not create tasks.
 
 When you cannot run JavaScript, fetch the page HTML if the element is already in that document. Pass `element_selector` (a normal CSS selector for one element, such as `section.pricing button.pay`) and `page_html` (the full document), plus `url`. BugHerd builds the sidebar path and places the pin at the centre of the element. There is no screenshot. A selector that matches more than one element does not place the pin, so make it specific. Content that JavaScript adds is not in the fetched document; measure in a browser for those pages. Don't write `css_selector_info` by hand.
 
@@ -41,19 +52,7 @@ If the user looks at the page and says the pin is on the wrong element, call `up
 
 If `prepare_pin` is missing from your tool list, start a new chat so the tools reload. Don't attach a file with `prepare_attachment_upload` instead of pinning.
 
-A pin and a screenshot are most accurate when you can:
-
-1. **Open the page in a browser session** and **run JavaScript in it**, to measure the element.
-2. **Take a screenshot of the visible viewport and upload it** over HTTP.
-3. **Reach the page the way its visitors do.** If the site needs a login, your browser session must be signed in.
-
-When you can't upload a screenshot, BugHerd takes one itself for public pages that were measured in a browser. A pin from fetched HTML has no screenshot. When you have neither a browser nor page HTML, create page feedback.
-
-**Tell the user once, at the start of the run**, which of these your setup supports and what that means for the pins and screenshots they'll get. Keep it brief and practical, for example:
-
-> I can measure elements in your browser, but I can't upload screenshots, so BugHerd will take them for public pages. Your staging site needs a login, so tasks there will have accurate pins but no screenshot.
-
-Follow [references/pinned-feedback.md](references/pinned-feedback.md) for the steps and how each setup behaves.
+**Tell the user once, at the start of the run**, which of these your setup supports. Keep it brief. Follow [references/pinned-feedback.md](references/pinned-feedback.md) for the steps.
 
 ## After creating
 
