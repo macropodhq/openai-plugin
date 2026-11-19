@@ -27,7 +27,7 @@ When the signed-in user is a client, BugHerd ignores title, severity, status, ta
 ## One task or many
 
 - `create_task` creates one task.
-- `create_tasks` creates up to 40 tasks in one project in a single call, and people get one email listing their new tasks instead of one per task. Use it for audit and checklist runs. Each result has its own `index` and either `task` or `error`, so check every result and retry only the ones that failed.
+- `bulk_create_tasks` creates up to 40 tasks in one project in a single call, and people get one email listing their new tasks instead of one per task. Use it for audit and checklist runs. Each result has its own `index` and either `task` or `error`, so check every result and retry only the ones that failed.
 
 Before a large batch, tell the user how many tasks you're about to create and in which project.
 
@@ -35,11 +35,11 @@ Before a large batch, tell the user how many tasks you're about to create and in
 
 When you can open the page and run JavaScript, pin every task and upload the viewport screenshot yourself.
 
-Call `prepare_pin` once. Before the page loads, block `sidebarv2.js` and `embed.js`. Use a browser profile without the BugHerd extension. If the window is one the user already uses, tell them to disable that extension, or the BugHerd tab will be in the screenshots.
+Call `get_pin_script` once. Before the page loads, block `sidebarv2.js` and `embed.js`. Use a browser profile without the BugHerd extension. If the window is one the user already uses, tell them to disable that extension, or the BugHerd tab will be in the screenshots.
 
-If the user named a device or a size, use that CSS viewport, such as 430×932 for an iPhone 15 Plus in portrait. Otherwise ask once which size to use, and use 1280×800 when they have no preference. Do not resize between the measurement and the screenshot.
+If the user named a device or a size, use that CSS viewport, such as 430×932 for an iPhone 15 Plus in portrait. Otherwise ask once, offering choices instead of an open question: desktop or laptop (1920×1080, 1440×900, 1366×768, 2560×1440), mobile (390×844, 412×915, 360×800), or "you choose". If they say you choose, use 1440×900, or 390×844 if they asked for mobile feedback. Do not resize between the measurement and the screenshot.
 
-Measure with `BugHerdMeasure.measure`, pass the packet unchanged as `capture`, screenshot the visible viewport before scrolling, and post that JPEG with `prepare_screenshot_upload`. Set `screenshot` to `none` so BugHerd does not take a second one. Leave `screenshot` as `auto` only when you can measure but cannot capture pixels, and only when the page is public. Measure one element at a time when each task needs its own screenshot.
+Measure with `BugHerdMeasure.measure` and pass the packet unchanged as `capture`, with `screenshot` set to `upload`. The `create_task` response then carries a `screenshot_upload` form; screenshot the visible viewport before scrolling and post that JPEG to it. Leave `screenshot` as `auto` only when you can measure but cannot capture pixels, and only when the page is public. Use `none` when neither of you can reach the page, such as behind a login. Measure one element at a time when each task needs its own screenshot.
 
 Do not ask for a password in the chat.
 
@@ -50,7 +50,7 @@ When you cannot run JavaScript, fetch the page HTML if the element is already in
 
 If the user looks at the page and says the pin is on the wrong element, call `update_task` with a more specific `element_selector` and the same `page_html`. Ask which element they mean before guessing between similar ones.
 
-If `prepare_pin` is missing from your tool list, start a new chat so the tools reload. Don't attach a file with `prepare_attachment_upload` instead of pinning.
+If `get_pin_script` is missing from your tool list, your client is holding a cached copy of an older tool list. Reconnect the BugHerd MCP server or start a new chat so it reloads. If it is still missing, create page feedback with `url` and tell the user the task could not be pinned; don't retry in a loop, and don't attach a file with `get_attachment_upload_url` instead of pinning.
 
 **Tell the user once, at the start of the run**, which of these your setup supports. Keep it brief. Follow [references/pinned-feedback.md](references/pinned-feedback.md) for the steps.
 
@@ -63,8 +63,8 @@ If `prepare_pin` is missing from your tool list, start a new chat so the tools r
 
 To attach a local file, such as a log:
 
-1. Call `prepare_attachment_upload` to get a `put_url` and `public_url` for each file.
+1. Call `get_attachment_upload_url` to get a `put_url` and `public_url` for each file.
 2. HTTP PUT the file bytes to `put_url`. Send only the headers in `headers`. Do not add `x-amz-acl`: it is already in the URL, and S3 rejects the upload if you send it again.
 3. Call `update_task_attachments` with `action: "add"` and `attachments: [{ file_name, url: public_url }]`.
 
-For a file that's already online, pass its HTTPS `url` directly in step 3. This adds a file to the task. It does not pin the task, and it does not become the screenshot in the sidebar. That screenshot uses `prepare_screenshot_upload`, described in the reference.
+For a file that's already online, pass its HTTPS `url` directly in step 3. This adds a file to the task. It does not pin the task, and it does not become the screenshot in the sidebar. That screenshot comes from the `screenshot_upload` form on the `create_task` response, described in the reference.

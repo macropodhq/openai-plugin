@@ -35,7 +35,7 @@ The element's `html` snippet is usually the fastest route. Search the codebase f
 
 ## Reading many tasks
 
-`list_project_tasks` returns a page of tasks with the same fields as `get_task_details`, minus comments and logs. For a quick scan, pass `view: "compact"` and add `fields` such as `description` only as needed. Call `get_task_details` for the tasks you need to act on.
+`list_tasks` returns a page of tasks with the same fields as `get_task_details`, minus comments and logs. For a quick scan, pass `view: "compact"` and add `fields` such as `description` only as needed. Call `get_task_details` for the tasks you need to act on.
 
 ## Notes
 

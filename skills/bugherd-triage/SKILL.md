@@ -12,7 +12,7 @@ The agent takes the first pass; people make the calls that matter. Suggest, then
 1. `get_project_details`: the project's `statuses` (board columns, in order).
 2. `list_project_users`: who can be assigned. Clients can only be assigned when the project's `assign_guests` (clients) setting is on.
 3. `list_project_tags`: the tags the team already uses.
-4. `list_project_tasks` with `status: "Feedback"` for new feedback, or the columns the user cares about. Use `view: "compact"` with `fields: ["description", "tag_names"]` to scan quickly, and page with `offset`.
+4. `list_tasks` with the `project_id` and `status: "Feedback"` for new feedback, or the columns the user cares about. Use `view: "compact"` with `fields: ["description", "tag_names"]` to scan quickly, and page with `offset`.
 
 ## 2. Assess each task
 
@@ -32,12 +32,12 @@ Present a short plan before changing anything: a list or table of tasks with the
 | Status, severity, title, description, due date, client visibility | `update_task` |
 | Assignees | `update_task_assignees` with `action` `add`, `remove` or `set` |
 | Tags | `update_task_tags` with `action` `add`, `remove` or `set`. `set` with `[]` clears all tags |
-| The same change on up to 50 tasks | `update_tasks` (bulk) |
+| The same change on up to 50 tasks | `bulk_update_tasks` (bulk) |
 | A reply or note | `add_comment` |
 
 **Status names must match a column.** Use a name from `statuses`, `"feedback"` for the Feedback inbox, or `"archived"` or `"closed"` to take the task off the board. Matching ignores case. An unrecognised name is refused with the closest match and the full list, for example `Unknown status "Doen". Did you mean "Done"?`. Check the suggestion is what the user meant before retrying with it.
 
-In `update_tasks`, assignees **replace** each task's existing assignees, while tags are **added** to existing tags. To add one assignee without removing others, use `update_task_assignees` with `action: "add"` per task.
+In `bulk_update_tasks`, assignees **replace** each task's existing assignees, while tags are **added** to existing tags. To add one assignee without removing others, use `update_task_assignees` with `action: "add"` per task.
 
 ## Comments
 
