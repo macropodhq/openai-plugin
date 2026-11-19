@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "bugherd",
-  "version": "1.2.3",
+  "version": "1.2.4",
   "description": "Connect BugHerd to find projects and manage website feedback.",
   "author": {
     "name": "BugHerd",
@@ -51,7 +51,7 @@
             {
               "description": "Find tasks assigned to or created by the connected account.",
               "prompt": "Show BugHerd tasks assigned to or created by me.",
-              "tools_triggered": "list_my_tasks",
+              "tools_triggered": "list_tasks",
               "expected_behavior": "Return only tasks assigned to or created by the connected account within accessible projects, with their project and status when available. Do not label every result as assigned to the account."
             },
             {
@@ -63,13 +63,13 @@
             {
               "description": "Summarize feedback in the review project.",
               "prompt": "Summarize the open feedback tasks in my BugHerd Review Demo project.",
-              "tools_triggered": "list_projects, get_project_details, list_project_tasks",
+              "tools_triggered": "list_projects, get_project_details, list_tasks",
               "expected_behavior": "Resolve the project and its board statuses, then summarize its open feedback tasks. Do not include tasks from another project or silently treat a partial page as the complete task list."
             },
             {
               "description": "Add a comment to a sample feedback task.",
               "prompt": "Add the comment 'Reviewed through the BugHerd plugin' to the task named Plugin review sample in BugHerd Review Demo.",
-              "tools_triggered": "list_projects, list_project_tasks, add_comment",
+              "tools_triggered": "list_projects, list_tasks, add_comment",
               "expected_behavior": "Find the named sample task, add one comment containing the requested text with agent attribution as instructed by the tool, and report the result. Visibility is Members Only when the organization supports private comments and public otherwise."
             }
           ],
@@ -93,7 +93,7 @@
         }
       },
       "publication": {
-        "release_notes": "When a client can capture the viewport, it uploads that screenshot and BugHerd does not take a second one. A login form continues in headless Chrome after the user signs in. HTTP basic auth stays in the window where they entered it. Passwords are not asked for in the chat."
+        "release_notes": "Several tools were renamed for clarity (list_my_tasks, list_all_tasks and list_project_tasks are now one list_tasks; create_tasks and update_tasks are bulk_create_tasks and bulk_update_tasks); the old names still work. Creating pinned feedback is more reliable: a browser you drive yourself, including headlessly, is preferred over a bare CSS selector, and capturing and uploading the screenshot yourself is preferred over waiting on BugHerd. When no preference is given, viewport size now offers common desktop, laptop and mobile presets instead of one fixed default."
       }
     }
   }

@@ -1,11 +1,25 @@
 ---
 name: bugherd-basics
-description: Core BugHerd concepts for agents using the BugHerd MCP. Use before any BugHerd work to find the right project, and when the user asks about projects, websites, design assets, team members versus clients, or share links.
+description: Core BugHerd concepts for agents using the BugHerd MCP, and an index of the other BugHerd skills. Read this first to find the right project and understand websites, design assets, members versus clients and share links, then load the skill for the job itself. On its own it is not enough to create feedback, triage, fix or report.
 ---
 
 # BugHerd basics
 
 BugHerd is a visual feedback tool. People leave feedback on a live website or a design file, and each piece of feedback becomes a **task** on a project's task board.
+
+## This skill is not enough on its own
+
+It covers projects, tasks, people and share links. It does **not** cover how to do the work. Load the skill for the task in front of you before you call a write tool:
+
+| You are about to | Load this first | It covers |
+| --- | --- | --- |
+| Create feedback or a task | `bugherd-creating-feedback` | **Required.** Pinning to an element, screenshots, batches. `create_task` alone will not pin. |
+| Understand a task someone sent you | `bugherd-reading-tasks` | The element, the screenshot, attachments, discussion |
+| Triage, assign, tag, close or reply | `bugherd-triage` | Statuses, assignees, comment visibility |
+| Fix feedback in a codebase | `bugherd-fix-with-review` | Triage to pull request, with approval at each step |
+| Summarise or report | `bugherd-reporting` | Standups, client updates, activity |
+
+Creating a pinned task is a multi-step flow that none of the tool descriptions state in full. If you are creating feedback and have not read `bugherd-creating-feedback`, you do not yet know how to do it.
 
 ## Projects
 

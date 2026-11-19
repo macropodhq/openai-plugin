@@ -23,10 +23,10 @@ BugHerd also can't take its own screenshot when the organisation has screenshots
 
 ### 1. Start a capture session
 
-Call `prepare_pin` with the `project_id` once per run, even for many pages. It returns:
+Call `get_pin_script` with the `project_id` once per run, even for many pages. It returns:
 
 - `snippet`: JavaScript that defines `window.BugHerdMeasure`.
-- `snippet_version`: keep it. Pass it to later `prepare_pin` calls and the snippet is left out when it hasn't changed.
+- `snippet_version`: keep it. Pass it to later `get_pin_script` calls and the snippet is left out when it hasn't changed.
 - `measure_script_url`: the same code as a script URL, if loading a script is easier than evaluating the snippet.
 - `instructions`: the current measuring rules. Follow them if they differ from this guide.
 
@@ -35,7 +35,11 @@ Call `prepare_pin` with the `project_id` once per run, even for many pages. It r
 The pin and the screenshot both use the viewport size you measure at, and so does BugHerd's own screenshot. Use the device's CSS viewport, not its physical pixel size.
 
 - If the user names a device, screen size, or breakpoint, use that. An iPhone 15 Plus in portrait is 430×932. A common phone is 390×844.
-- Otherwise ask once which size to use, and use 1280×800 when they have no preference.
+- Otherwise ask once, offering choices rather than an open question, so a generic pick doesn't land on a window the user didn't expect:
+  - Desktop or laptop: 1920×1080, 1440×900, 1366×768, or 2560×1440.
+  - Mobile: 390×844, 412×915, or 360×800.
+  - Or "you choose".
+- If they say you choose, use 1440×900, or 390×844 if they asked for mobile feedback.
 - If your browser can't be resized, carry on and mention the size you measured at in the task.
 
 Don't resize between measuring and taking the screenshot.
@@ -80,23 +84,24 @@ Call `create_task` with the usual fields and `capture` set to the packet. The pa
 
 Set `screenshot`:
 
-- `none`: you are uploading the viewport yourself, or BugHerd cannot see the page. This is the choice when you can capture pixels.
-- `auto`: you can measure but cannot capture pixels, and the page is public. If you don't upload within 2 minutes, BugHerd takes one from the live page at the measured scroll position.
+- `upload`: you are posting the viewport yourself. This is the choice whenever you can capture pixels. The response includes a `screenshot_upload` form.
+- `auto`: you can measure but cannot capture pixels, and the page is public. BugHerd photographs the live page itself at the measured scroll position, about two minutes later.
+- `none`: neither of you can see the page, such as a page behind a login BugHerd does not have.
 
 ### 8. Upload the screenshot
 
-Call `prepare_screenshot_upload` with `project_id` and `task_id`, within an hour of creating the task. It returns an upload form and the `expected_width` and `expected_height` of the viewport in CSS pixels (a device-pixel multiple is fine). Then:
+With `screenshot: "upload"`, the `create_task` response carries `screenshot_upload`, along with the `expected_width` and `expected_height` of the viewport in CSS pixels (a device-pixel multiple is fine). No extra call is needed to start the upload. Then:
 
 1. POST the JPEG to `upload_url` as multipart form data, with these fields: `key` set to `object_key`, `AWSAccessKeyId` set to `access_key_id`, `acl`, `policy`, `signature`, `Content-Type` set to `content_type`, and the image bytes in the `file` field.
 2. PUT `callback_url` with the JSON body `{ "key": "<object_key>" }`. This attaches the screenshot to the task.
 
-A task that already has a screenshot refuses another. If the task's `screenshot.status` is `pending`, one is on its way, so don't upload.
+A task that already has a screenshot refuses another.
 
 ## Many elements on one page
 
 When you can upload a screenshot, measure one element at a time with `measure`, create that task, and upload that viewport before moving to the next element.
 
-`BugHerdMeasure.measureAll([...])` measures several targets without scrolling. Use it only when you cannot upload screenshots. It returns a packet or `{ error }` for each. Pass each packet as a task's `capture` in `create_tasks`, and handle the errors separately. BugHerd then photographs only the elements that were already on screen, and only on a public page.
+`BugHerdMeasure.measureAll([...])` measures several targets without scrolling. Use it only when you cannot upload screenshots. It returns a packet or `{ error }` for each. Pass each packet as a task's `capture` in `bulk_create_tasks`, and handle the errors separately. BugHerd then photographs only the elements that were already on screen, and only on a public page.
 
 ## Moving a pin
 
@@ -112,5 +117,5 @@ The response also includes `script_url`, `capture_url` and `token` for `BugHerdC
 
 - **A warning says the task was created without a pin:** the packet was rejected, usually because it changed. Measure again and move the pin with `update_task`.
 - **"Capture has already been used":** each `capture_id` works once. Capture again.
-- **`prepare_pin` is not in your tool list:** start a new chat so the tools reload. Don't use `prepare_attachment_upload` in its place.
+- **`get_pin_script` is not in your tool list:** start a new chat so the tools reload. Don't use `get_attachment_upload_url` in its place.
 - **The pin looks off on the screenshot:** the screenshot was probably full-page, or the page scrolled between measuring and capturing. Measure again and take a viewport-only screenshot.

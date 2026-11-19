@@ -11,14 +11,14 @@ Reports should help someone walk into a standup or client meeting prepared. Lead
 
 | Question | Tool |
 |---|---|
-| What's on my plate? | `list_my_tasks`: tasks assigned to or created by the user, across projects |
-| What's open across all projects? | `list_all_tasks`, filtered by `status`, `assignee_email` or `search` |
-| What's the state of one project? | `get_project_details` for statuses, then `list_project_tasks` by status |
+| What's on my plate? | `list_tasks` with `scope: "mine"`: assigned to or created by the user, across projects |
+| What's open across all projects? | `list_tasks`, filtered by `status`, `assignee_email` or `search` |
+| What's the state of one project? | `get_project_details` for statuses, then `list_tasks` with `project_id` by status |
 | What happened since last time? | `list_project_activity` with `since` |
 | How much got resolved, week by week? | `get_project_activity_report` |
-| What's gone quiet? | `list_project_tasks` with `updated_before` and `sort_by: "updated_at"` |
+| What's gone quiet? | `list_tasks` with `updated_before` and `sort_by: "updated_at"` |
 
-Use `view: "compact"` on `list_project_tasks` for large projects, and page with `limit` and `offset` until you've seen every task. `pagination.total` tells you how many there are.
+Use `view: "compact"` on `list_tasks` for large projects, and page with `limit` and `offset` until you've seen every task. `pagination.total` tells you how many there are.
 
 ## Activity
 
