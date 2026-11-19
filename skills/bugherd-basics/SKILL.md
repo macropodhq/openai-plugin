@@ -38,6 +38,10 @@ A project is one piece of client or internal work. It holds:
 
 Pass `project_id` as a string, such as `"12345"`. When a page URL is involved, match it against the project's `sites` before creating or updating tasks there.
 
+### Install the sidebar on a website
+
+`create_project` and `get_project_details` return `install_script` to members: the `<script>` tag that shows the BugHerd sidebar on the project's websites. To install it, add it to the site's `<head>`, such as a CMS's custom code setting, then publish the site. If the site already has a BugHerd script for another project, ask the user before replacing it, so a site doesn't end up with two sidebars.
+
 ## Tasks
 
 - `task_id` is the task's number within its project, the number people see in BugHerd. Update tools also accept the global task `id`.
