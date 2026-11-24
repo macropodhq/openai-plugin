@@ -8,7 +8,7 @@ Use these steps whenever you can run code. A terminal or sandbox that can run Py
 
 | Your setup | Pin | Screenshot |
 |---|---|---|
-| You can run code: the capture script, or a browser you drive, uploading the viewport | Accurate | Your screenshot, exactly matching the pin. Set `screenshot` to `upload` |
+| You can run code: the capture script, or a browser you drive, and you finish `screenshot_upload.instructions` | Accurate | Your screenshot, exactly matching the pin. Set `screenshot` to `upload`. `pin_quality` is `pinned_awaiting_upload` until the PUT callback succeeds |
 | You can run JavaScript, but you can't upload images, and the page is public | Accurate | BugHerd takes one about 2 minutes later. Leave `screenshot` as `auto` |
 | Login form, and you can open a Chrome window | After the user signs in. Prefer to copy the cookies into headless Chrome and finish there | Your screenshot of the signed-in page |
 | HTTP basic auth, and you can open a Chrome window | In that same window, after the user uses Chrome's dialog | Your screenshot from that window. The sign-in does not transfer to headless Chrome |
@@ -82,18 +82,20 @@ Call `create_task` with the usual fields and `capture` set to the packet. The pa
 
 Set `screenshot`:
 
-- `upload`: you are posting the viewport yourself. This is the choice whenever you can capture pixels. The response includes a `screenshot_upload` form.
-- `auto`: you can measure but cannot capture pixels, and the page is public. BugHerd photographs the live page itself at the measured scroll position, about two minutes later.
+- `upload`: you are posting the viewport yourself. This is the choice whenever you can capture pixels and you will finish the callback. The response includes a `screenshot_upload` form and `pin_quality` `pinned_awaiting_upload`.
+- `auto`: you can measure but cannot capture pixels, or you cannot finish the upload, and the page is public. BugHerd photographs the live page itself at the measured scroll position, about two minutes later. `pin_quality` is `pinned_with_screenshot`.
 - `none`: neither of you can see the page, such as a page behind a login BugHerd does not have.
 
 ### 8. Upload the screenshot
 
-With `screenshot: "upload"`, the `create_task` response carries `screenshot_upload`, along with the `expected_width` and `expected_height` of the viewport in CSS pixels (a device-pixel multiple is fine). No extra call is needed to start the upload. Then:
+With `screenshot: "upload"`, the `create_task` response carries `screenshot_upload`, along with the `expected_width` and `expected_height` of the viewport in CSS pixels (a device-pixel multiple is fine), and an `instructions` string. Follow that string. No extra call is needed to start the upload. The steps are:
 
-1. POST the JPEG to `upload_url` as multipart form data, with these fields: `key` set to `object_key`, `AWSAccessKeyId` set to `access_key_id`, `acl`, `policy`, `signature`, `Content-Type` set to `content_type`, and the image bytes in the `file` field.
-2. PUT `callback_url` with the JSON body `{ "key": "<object_key>" }`. This attaches the screenshot to the task.
+1. POST the JPEG to `upload_url` as multipart form data, with these fields: `key` set to `object_key`, `AWSAccessKeyId` set to `access_key_id`, `acl`, `policy`, `signature`, `Content-Type` set to `content_type`, and the image bytes in the `file` field. A 204 means the file is stored. It does not attach the screenshot, and `screenshot.status` stays `pending`.
+2. PUT `callback_url` with `Content-Type: application/json` and the body `{ "key": "<object_key>" }`. This attaches the screenshot. POST to `callback_url` returns 404. Do not send a form field named `url`.
 
-To replace a task's screenshot, measure again and call `update_task` with `capture` and `screenshot: "upload"`. Its response carries a fresh `screenshot_upload` form, and the new image replaces the old one.
+If you cannot download the capture script, do these two steps yourself, or set `screenshot` to `auto` on a public page. Do not guess the callback.
+
+To replace a task's screenshot, measure again and call `update_task` with `capture` and `screenshot: "upload"`. Its response carries a fresh `screenshot_upload` form. Follow its `instructions`. The new image replaces the old one.
 
 ## Many elements on one page
 

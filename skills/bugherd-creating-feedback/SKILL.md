@@ -54,7 +54,9 @@ It blocks the BugHerd sidebar, scrolls to each element, waits for animations, me
 
 1. Read `bugherd-capture/captures.json`. Fix any failing selector and run the capture again, so that every target succeeds.
 2. Call `bulk_create_tasks` with the tasks in the same order as the captures. Set each task's `capture` to `captures[i].capture`, unchanged, and set `screenshot` to `upload`.
-3. Save the response as JSON, then run `python bugherd_capture.py upload --captures bugherd-capture/captures.json --response response.json`.
+3. Save the response as JSON, then run `python bugherd_capture.py upload --captures bugherd-capture/captures.json --response response.json`. That command POSTs each JPEG and then PUTs `callback_url` with `{ "key": "<object_key>" }`.
+
+If you cannot download the capture script, do not invent the callback. On a public page set `screenshot` to `auto` and BugHerd takes the screenshot. Otherwise follow `screenshot_upload.instructions` on the create response yourself. A 204 from the file POST only stores the bytes. POST to `callback_url` returns 404 and leaves `screenshot.status` pending. `pin_quality` stays `pinned_awaiting_upload` until the PUT succeeds.
 
 For a signed-in page, pass the cookies as a Playwright storage state with `--storage-state`. For a phone, use `--device "iPhone 15"` or `--viewport 390x844`.
 
@@ -66,7 +68,7 @@ If the user named a device or a size, use that CSS viewport, such as 430×932 fo
 
 Before the page loads, block `sidebarv2.js` and `embed.js`. Use a browser profile without the BugHerd extension. If the window is one the user already uses, tell them to disable that extension, or the BugHerd tab will be in the screenshots.
 
-Measure with `BugHerdMeasure.measure` and pass the packet unchanged as `capture`, with `screenshot` set to `upload`. The `create_task` response then carries a `screenshot_upload` form; screenshot the visible viewport before scrolling and post that JPEG to it. Leave `screenshot` as `auto` only when you can measure but cannot capture pixels, and only when the page is public. Use `none` when neither of you can reach the page, such as behind a login. Measure one element at a time when each task needs its own screenshot.
+Measure with `BugHerdMeasure.measure` and pass the packet unchanged as `capture`, with `screenshot` set to `upload`. The `create_task` response then carries a `screenshot_upload` form. Screenshot the visible viewport before scrolling and follow that form's `instructions`: POST the JPEG, then PUT `callback_url` with `{ "key": "<object_key>" }`. A 204 from the POST does not attach the screenshot. Leave `screenshot` as `auto` when you can measure but cannot capture pixels, or when you cannot finish that upload, and only when the page is public. Use `none` when neither of you can reach the page, such as behind a login. Measure one element at a time when each task needs its own screenshot. Disable smooth scrolling, wait for it to settle, measure again with `scroll: false`, then take the viewport screenshot. A full-page screenshot puts the pin in the wrong place.
 
 Do not ask for a password in the chat.
 
@@ -85,8 +87,8 @@ If `get_pin_script` is missing from your tool list, your client is holding a cac
 
 ## After creating
 
-- Check `pin_quality` on each created task. `pinned_with_screenshot` is the full result. For anything else, tell the user, and follow the `warnings` to upgrade the task.
-- To give an existing task a screenshot, or to move its pin, measure the element again and call `update_task` with `capture` and `screenshot: "upload"`. Post the viewport JPEG to the returned `screenshot_upload` form; it replaces any older screenshot. Don't create a duplicate task.
+- Check `pin_quality` on each created task. `pinned_with_screenshot` means the image is stored, or BugHerd will take it. `pinned_awaiting_upload` means the pin is saved and the screenshot is still pending: follow `screenshot_upload.instructions` before you stop. For any other value, tell the user, and follow the `warnings`.
+- To give an existing task a screenshot, or to move its pin, measure the element again and call `update_task` with `capture` and `screenshot: "upload"`. Follow `screenshot_upload.instructions` on the response. The PUT replaces any older screenshot. Don't create a duplicate task.
 - Read the `warnings` on each created task. They explain anything that didn't go to plan, such as a pin that wasn't saved, and how to fix it.
 - Share the `view_in_bugherd_url` of each created task, or a summary for a batch.
 
